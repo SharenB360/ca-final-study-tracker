@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Final — Study Tracker 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── RESET & BASE ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #0a0a0f;
+  --surface:  #111118;
+  --surface2: #18181f;
+  --border:   rgba(255,255,255,0.07);
+  --text:     #e8e8f0;
+  --muted:    rgba(232,232,240,0.45);
+  --accent:   #7c6fcd;
+  --accent2:  #4fd1c5;
+  --danger:   #f56565;
+  --success:  #48bb78;
+  --warn:     #ecc94b;
+  --fr:       #818cf8; --afm:#34d399; --audit:#f472b6;
+  --dt:       #fb923c; --idt:#22d3ee; 
+  --radius:   12px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.4);
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --trans: 0.18s ease;
+}
+[data-theme="light"] {
+  --bg:       #f4f4f8;
+  --surface:  #ffffff;
+  --surface2: #f0f0f5;
+  --border:   rgba(0,0,0,0.08);
+  --text:     #1a1a2e;
+  --muted:    rgba(26,26,46,0.5);
+  --shadow:   0 4px 24px rgba(0,0,0,0.1);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  transition: background var(--trans), color var(--trans);
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── LAYOUT ──────────────────────────────────────── */
+.app { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto; z-index: 100;
+  transition: transform var(--trans);
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .logo-mark {
+  font-family: var(--font-head);
+  font-weight: 800; font-size: 17px;
+  color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.logo-sub { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-top: 3px; letter-spacing: 0.5px; }
+.nav { padding: 16px 12px; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius);
+  color: var(--muted); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all var(--trans);
+  margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--text); background: var(--surface2); }
+.nav-item.active::before {
+  content: ''; width: 3px; height: 18px; background: var(--accent);
+  border-radius: 99px; margin-left: -4px;
+}
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.sidebar-bottom { padding: 16px 12px; border-top: 1px solid var(--border); }
+.theme-toggle {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius);
+  color: var(--muted); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all var(--trans);
+  border: none; background: none; width: 100%;
+}
+.theme-toggle:hover { color: var(--text); background: var(--surface2); }
+
+/* MAIN */
+.main { flex: 1; overflow-x: hidden; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.streak-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(251,146,60,0.15); border: 1px solid rgba(251,146,60,0.3);
+  color: #fb923c; border-radius: 20px;
+  padding: 5px 12px; font-size: 12px; font-weight: 600;
+  font-family: var(--font-mono);
+}
+.hamburger { display: none; background: none; border: none; color: var(--text); font-size: 20px; }
+
+/* PAGE CONTENT */
+.page { padding: 28px; display: none; }
+.page.active { display: block; }
+
+/* ── CARDS ───────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  transition: border-color var(--trans);
+}
+.card:hover { border-color: rgba(255,255,255,0.12); }
+[data-theme="light"] .card:hover { border-color: rgba(0,0,0,0.14); }
+.card-title {
+  font-family: var(--font-head);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.card-value {
+  font-family: var(--font-mono);
+  font-size: 32px; font-weight: 500; color: var(--text);
+}
+.card-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* GRID HELPERS */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+/* ── PROGRESS BAR ────────────────────────────────── */
+.prog-wrap { margin-top: 8px; }
+.prog-bar {
+  height: 6px; background: var(--surface2);
+  border-radius: 99px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+.prog-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--muted); margin-bottom: 5px;
+}
+.prog-label strong { color: var(--text); font-size: 13px; }
+
+/* ── SUBJECT COLORS ──────────────────────────────── */
+.color-fr    { background: var(--fr); }
+.color-afm   { background: var(--afm); }
+.color-audit { background: var(--audit); }
+.color-dt    { background: var(--dt); }
+.color-idt   { background: var(--idt); }
+.text-fr    { color: var(--fr); }
+.text-afm   { color: var(--afm); }
+.text-audit { color: var(--audit); }
+.text-dt    { color: var(--dt); }
+.text-idt   { color: var(--idt); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* ── TIMER ───────────────────────────────────────── */
+.timer-display {
+  font-family: var(--font-mono);
+  font-size: 72px; font-weight: 500;
+  text-align: center; letter-spacing: -2px;
+  color: var(--text); line-height: 1;
+  padding: 32px 0 20px;
+}
+.timer-ring-wrap {
+  display: flex; justify-content: center; padding: 16px 0 8px;
+}
+.timer-ring {
+  position: relative; width: 200px; height: 200px;
+}
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring-bg { fill: none; stroke: var(--surface2); stroke-width: 6; }
+.timer-ring-fg { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.timer-ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.timer-ring-time { font-family: var(--font-mono); font-size: 28px; font-weight: 500; }
+.timer-ring-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.timer-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 10px 22px; border-radius: 8px;
+  font-family: var(--font-head); font-weight: 600; font-size: 13px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); transition: all var(--trans);
+}
+.btn:hover { background: var(--border); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn-danger  { background: var(--danger);  border-color: var(--danger);  color: #fff; }
+.btn-warn    { background: var(--warn);    border-color: var(--warn);    color: #111; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* ── FORM ELEMENTS ───────────────────────────────── */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+.form-control {
+  width: 100%; padding: 10px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 14px;
+  transition: border-color var(--trans); outline: none;
+}
+.form-control:focus { border-color: var(--accent); }
+select.form-control option { background: var(--surface2); }
+
+/* ── TASK ITEM ───────────────────────────────────── */
+.task-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px;
+  background: var(--surface2); margin-bottom: 8px;
+  transition: opacity var(--trans);
+  border: 1px solid transparent;
+}
+.task-item.done { opacity: 0.5; }
+.task-item.done .task-name { text-decoration: line-through; }
+.task-check {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 2px solid var(--border); background: none;
+  flex-shrink: 0; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: all var(--trans);
+}
+.task-check.checked { background: var(--success); border-color: var(--success); }
+.task-check.checked::after { content: '✓'; color: #fff; font-size: 11px; }
+.task-meta { flex: 1; min-width: 0; }
+.task-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-tags { display: flex; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+.tag {
+  padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+}
+.tag-fr    { background: rgba(129,140,248,0.15); color: var(--fr); }
+.tag-afm   { background: rgba(52,211,153,0.15);  color: var(--afm); }
+.tag-audit { background: rgba(244,114,182,0.15); color: var(--audit); }
+.tag-dt    { background: rgba(251,146,60,0.15);  color: var(--dt); }
+.tag-idt   { background: rgba(34,211,238,0.15);  color: var(--idt); }
+.delete-btn { background: none; border: none; color: var(--muted); font-size: 16px; padding: 4px; transition: color var(--trans); }
+.delete-btn:hover { color: var(--danger); }
+
+/* ── CHAPTER TRACKER ─────────────────────────────── */
+.chapter-subject { margin-bottom: 24px; }
+.chapter-subject-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; cursor: pointer; user-select: none;
+  padding: 14px 18px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all var(--trans);
+}
+.chapter-subject-header:hover { border-color: rgba(255,255,255,0.12); }
+.chapter-subject-name {
+  font-family: var(--font-head); font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.chapter-subject-stats { display: flex; align-items: center; gap: 14px; }
+.chapter-list { display: none; padding: 0 4px; }
+.chapter-list.open { display: block; }
+.chapter-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;
+  background: var(--surface2); transition: all var(--trans);
+}
+.chapter-item:hover { background: var(--surface); }
+.chapter-num { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 24px; flex-shrink: 0; }
+.chapter-name { flex: 1; font-size: 13px; }
+.chapter-status select {
+  padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); cursor: pointer;
+}
+.status-not   { border-left-color: var(--muted) !important; }
+.status-prog  { border-left-color: var(--warn) !important; }
+.status-done  { border-left-color: var(--success) !important; }
+.chapter-item { border-left: 3px solid transparent; }
+
+/* ── CHART CONTAINER ─────────────────────────────── */
+.chart-wrap { position: relative; }
+.chart-wrap canvas { max-width: 100%; }
+
+/* ── STATS TABLE ─────────────────────────────────── */
+.stats-table { width: 100%; border-collapse: collapse; }
+.stats-table th { padding: 10px 14px; text-align: left; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 600; }
+.stats-table td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border); }
+.stats-table tr:last-child td { border-bottom: none; }
+.stats-table tr:hover td { background: var(--surface2); }
+
+/* ── SECTION TITLE ───────────────────────────────── */
+.section-title {
+  font-family: var(--font-head); font-size: 20px; font-weight: 800;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+}
+.section-title span { font-size: 22px; }
+
+/* ── DIVIDER ─────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+/* ── OVERALL RING ────────────────────────────────── */
+.overall-ring-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px 0;
+}
+.overall-ring { position: relative; width: 140px; height: 140px; }
+.overall-ring svg { transform: rotate(-90deg); }
+.overall-ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.overall-pct { font-family: var(--font-mono); font-size: 28px; font-weight: 500; }
+.overall-sub { font-size: 10px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+/* ── TOAST ───────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow); z-index: 999;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.25s ease; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.info    { border-color: var(--accent); color: var(--accent); }
+
+/* ── MOBILE OVERLAY ──────────────────────────────── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .grid-21 { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: 0; top: 0; height: 100vh; transform: translateX(-100%); z-index: 100; }
+  .sidebar.open { transform: translateX(0); }
+  .overlay.show { display: block; }
+  .hamburger { display: block; }
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .page { padding: 18px; }
+  .topbar { padding: 14px 18px; }
+  .timer-display { font-size: 52px; }
+}
+@media (max-width: 480px) {
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .card-value { font-size: 24px; }
+}
+
+/* ── MISC ────────────────────────────────────────── */
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap-8  { gap: 8px;  }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.mt-16  { margin-top: 16px; }
+.mt-24  { margin-top: 24px; }
+.mb-16  { margin-bottom: 16px; }
+.mb-24  { margin-bottom: 24px; }
+.text-muted { color: var(--muted); }
+.text-sm { font-size: 12px; }
+.bold { font-weight: 600; }
+.mono { font-family: var(--font-mono); }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.pill-success { background: rgba(72,187,120,0.15); color: var(--success); }
+.pill-warn    { background: rgba(236,201,75,0.15);  color: var(--warn); }
+.pill-muted   { background: var(--surface2); color: var(--muted); }
+.empty-state { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
+.empty-state .empty-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+.input-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.input-row .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
+
+/* ── LOGIN SCREEN ────────────────────────────────── */
+#login-screen {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  align-items: center; justify-content: center;
+  font-family: var(--font-body);
+}
+#login-screen.visible { display: flex; }
+.login-card {
+  width: 100%; max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 44px 40px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  animation: fadeIn 0.35s ease;
+  margin: 20px;
+}
+.login-logo {
+  text-align: center; margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, #7c6fcd, #a78bfa);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 26px; margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(124,111,205,0.4);
+}
+.login-logo h1 {
+  font-family: var(--font-head); font-size: 22px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px;
+}
+.login-logo p { font-size: 13px; color: var(--muted); }
+.login-error {
+  background: rgba(245,101,101,0.12);
+  border: 1px solid rgba(245,101,101,0.3);
+  color: #fc8181; border-radius: 8px;
+  padding: 10px 14px; font-size: 13px;
+  margin-bottom: 16px; display: none;
+}
+.login-error.show { display: block; }
+.login-hint {
+  text-align: center; margin-top: 16px;
+  font-size: 12px; color: var(--muted); line-height: 1.7;
+}
+.login-hint strong { color: var(--text); }
+
+/* ── USER BADGE IN TOPBAR ────────────────────────── */
+.user-badge {
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; padding: 5px 8px 5px 5px;
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface2);
+  transition: all var(--trans);
+}
+.user-badge:hover { border-color: rgba(255,255,255,0.15); }
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c6fcd, #a78bfa);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  font-family: var(--font-head); flex-shrink: 0;
+}
+.user-name { font-size: 12px; font-weight: 600; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+  background: rgba(245,101,101,0.12); border: 1px solid rgba(245,101,101,0.25);
+  color: #fc8181; transition: all var(--trans);
+}
+.logout-btn:hover { background: rgba(245,101,101,0.22); }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen" class="visible">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">📐</div>
+      <h1>CA Final Tracker</h1>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-control" id="login-username" type="text" placeholder="Enter your username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:15px;margin-top:8px;" onclick="doLogin()">Sign In →</button>
+    <div class="login-hint">
+      New here? Just enter any username —<br>
+      your account is <strong>created automatically</strong>.
+    </div>
+    <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);">
+      &copy; <span class="copy-year-login"></span> Sharen Bhaskar
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">📐</div>
+      <div>
+        <div>CA Final</div>
+        <div class="logo-sub">STUDY TRACKER</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">🏠</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('timer',this)">
+      <span class="nav-icon">⏱️</span> Study Timer
+    </button>
+    <button class="nav-item" onclick="showPage('planner',this)">
+      <span class="nav-icon">📋</span> Daily Planner
+    </button>
+    <button class="nav-item" onclick="showPage('chapters',this)">
+      <span class="nav-icon">📚</span> Chapters
+    </button>
+    <button class="nav-item" onclick="showPage('charts',this)">
+      <span class="nav-icon">📊</span> Analytics
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span class="nav-icon" id="theme-icon">☀️</span>
+      <span id="theme-label">Light Mode</span>
+    </button>
+    <div style="padding:10px 12px 2px;font-size:10px;color:var(--muted);line-height:1.6;">
+      &copy; <span id="copy-year"></span> Sharen Bhaskar.<br>All rights reserved.
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="flex-center gap-12">
+      <button class="hamburger" onclick="openSidebar()">☰</button>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-badge">🔥 <span id="streak-count">0</span> day streak</div>
+      <div class="user-badge" id="user-badge">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <span class="user-name" id="user-display-name">Guest</span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div class="page active fade-in" id="page-dashboard">
+    <div class="flex-between mb-24">
+      <div style="font-family:var(--font-head);font-size:20px;font-weight:800;">Dashboard</div>
+      <button onclick="shareOnWhatsApp()" style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:#25D366;border:none;border-radius:10px;color:#fff;font-family:var(--font-head);font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(37,211,102,0.35);transition:opacity 0.18s ease;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Share on WhatsApp
+      </button>
+    </div>
+    <div class="grid-4 mb-24">
+      <div class="card">
+        <div class="card-title">Today's Hours</div>
+        <div class="card-value mono" id="dash-today">0.0h</div>
+        <div class="card-sub">Study time logged today</div>
+      </div>
+      <div class="card">
+        <div class="card-title">This Week</div>
+        <div class="card-value mono" id="dash-week">0.0h</div>
+        <div class="card-sub">Hours in last 7 days</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total Hours</div>
+        <div class="card-value mono" id="dash-total">0.0h</div>
+        <div class="card-sub">All time study hours</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Chapters Done</div>
+        <div class="card-value mono" id="dash-chapters">0/0</div>
+        <div class="card-sub">Completed chapters</div>
+      </div>
+    </div>
+
+    <div class="grid-21 mb-24">
+      <div class="card">
+        <div class="card-title">Subject-wise Progress</div>
+        <div id="subject-progress-bars" style="margin-top:16px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Overall Completion</div>
+        <div class="overall-ring-wrap">
+          <div class="overall-ring">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle class="overall-ring-bg" cx="70" cy="70" r="58"/>
+              <circle class="overall-ring-fg" id="overall-ring-fg" cx="70" cy="70" r="58"
+                stroke-dasharray="364.4" stroke-dashoffset="364.4"
+                style="fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div class="overall-ring-text">
+              <div class="overall-pct" id="overall-pct">0%</div>
+              <div class="overall-sub">Syllabus<br>Completion</div>
+            </div>
+          </div>
+          <div style="margin-top:16px; width:100%; max-width:180px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:var(--muted);text-align:center;">
+              <div><div style="font-family:var(--font-mono);font-size:15px;color:var(--text);font-weight:500;" id="stat-done">0</div>Done</div>
+              <div><div style="font-family:var(--font-mono);font-size:15px;color:var(--warn);font-weight:500;" id="stat-prog">0</div>In Prog</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between mb-16">
+        <div class="card-title" style="margin-bottom:0">Today's Tasks</div>
+        <button class="btn btn-sm btn-primary" onclick="showPage('planner',document.querySelector('[onclick*=planner]'))">View All →</button>
+      </div>
+      <div id="dash-tasks"></div>
+    </div>
+  </div>
+
+  <!-- ── TIMER ── -->
+  <div class="page fade-in" id="page-timer">
+    <div class="section-title"><span>⏱️</span> Study Timer</div>
+    <div class="grid-2">
+      <div class="card" style="text-align:center;">
+        <div class="timer-ring-wrap">
+          <div class="timer-ring">
+            <svg width="200" height="200" viewBox="0 0 200 200">
+              <circle class="timer-ring-bg" cx="100" cy="100" r="88"/>
+              <circle class="timer-ring-fg" id="timer-ring-fg" cx="100" cy="100" r="88"
+                stroke-dasharray="553" stroke-dashoffset="553"/>
+            </svg>
+            <div class="timer-ring-text">
+              <div class="timer-ring-time mono" id="timer-display">00:00:00</div>
+              <div class="timer-ring-label" id="timer-status-label">Ready</div>
+            </div>
+          </div>
+        </div>
+        <div class="timer-controls mt-16">
+          <button class="btn btn-primary" id="btn-start" onclick="timerStart()">▶ Start</button>
+          <button class="btn btn-warn"    id="btn-pause" onclick="timerPause()" disabled>⏸ Pause</button>
+          <button class="btn btn-danger"  id="btn-stop"  onclick="timerStop()"  disabled>⏹ Stop</button>
+        </div>
+        <div id="timer-session-info" style="margin-top:16px;font-size:12px;color:var(--muted);"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Session Setup</div>
+        <div class="form-group mt-16">
+          <label class="form-label">Subject</label>
+          <select class="form-control" id="timer-subject" onchange="updateTimerChapters()">
+            <option value="">Select subject…</option>
+            <option value="fr">Financial Reporting</option>
+            <option value="afm">Advanced Financial Mgmt</option>
+            <option value="audit">Auditing & Ethics</option>
+            <option value="dt">Direct Tax</option>
+            <option value="idt">Indirect Tax</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chapter</label>
+          <select class="form-control" id="timer-chapter">
+            <option value="">Select chapter…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Session Note (optional)</label>
+          <input class="form-control" id="timer-note" type="text" placeholder="e.g. Revision, First Read…">
+        </div>
+        <div class="divider"></div>
+        <div class="card-title">Today's Sessions</div>
+        <div id="today-sessions" style="max-height:260px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLANNER ── -->
+  <div class="page fade-in" id="page-planner">
+    <div class="section-title"><span>📋</span> Daily Planner</div>
+    <div class="card mb-24">
+      <div class="card-title">Add New Task</div>
+      <div class="input-row mt-16">
+        <div class="form-group" style="flex:2;min-width:180px;">
+          <label class="form-label">Task Name</label>
+          <input class="form-control" id="task-name" type="text" placeholder="e.g. Complete Chapter 3 of FR…" onkeydown="if(event.key==='Enter')addTask()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <select class="form-control" id="task-subject" onchange="updateTaskChapters()">
+            <option value="fr">FR</option>
+            <option value="afm">AFM</option>
+            <option value="audit">Audit</option>
+            <option value="dt">DT</option>
+            <option value="idt">IDT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chapter</label>
+          <select class="form-control" id="task-chapter" style="max-width:200px;"></select>
+        </div>
+        <div class="form-group" style="flex:none;">
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-primary" onclick="addTask()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <div class="flex-between mb-16">
+          <div class="section-title" style="margin-bottom:0;font-size:15px;"><span>📌</span> Pending</div>
+          <span id="pending-count" class="pill pill-warn">0</span>
+        </div>
+        <div id="tasks-pending"></div>
+      </div>
+      <div>
+        <div class="flex-between mb-16">
+          <div class="section-title" style="margin-bottom:0;font-size:15px;"><span>✅</span> Completed Today</div>
+          <span id="done-count" class="pill pill-success">0</span>
+        </div>
+        <div id="tasks-done"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHAPTERS ── -->
+  <div class="page fade-in" id="page-chapters">
+    <div class="flex-between mb-24">
+      <div class="section-title" style="margin-bottom:0;"><span>📚</span> Chapter Tracker</div>
+      <div class="flex-center gap-8">
+        <span class="pill pill-success">✓ Done</span>
+        <span class="pill pill-warn">● In Progress</span>
+        <span class="pill pill-muted">○ Not Started</span>
+      </div>
+    </div>
+    <div id="chapter-list"></div>
+  </div>
+
+  <!-- ── CHARTS ── -->
+  <div class="page fade-in" id="page-charts">
+    <div class="section-title"><span>📊</span> Analytics</div>
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card-title">Weekly Study Hours</div>
+        <div class="chart-wrap mt-16" style="height:220px;">
+          <canvas id="chart-weekly"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Subject-wise Progress</div>
+        <div class="chart-wrap mt-16" style="height:220px;">
+          <canvas id="chart-subjects"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Subject Performance Summary</div>
+      <table class="stats-table mt-16">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Chapters</th>
+            <th>Done</th>
+            <th>In Progress</th>
+            <th>Hours Studied</th>
+            <th>Completion</th>
+          </tr>
+        </thead>
+        <tbody id="stats-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+</div><!-- /app -->
+
+<script>
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+let CURRENT_USER = null;
+
+function userStorageKey(username, key) {
+  return `ca_tracker_v2__${username}__${key}`;
+}
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('ca_users') || '{}'); } catch { return {}; }
+}
+function saveUsers(users) {
+  localStorage.setItem('ca_users', JSON.stringify(users));
+}
+
+function doLogin() {
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const errEl    = document.getElementById('login-error');
+
+  if (!username) {
+    errEl.textContent = 'Please enter a username.';
+    errEl.classList.add('show'); return;
+  }
+  errEl.classList.remove('show');
+
+  const users = getUsers();
+  if (!users[username]) {
+    users[username] = { username, createdAt: new Date().toISOString() };
+    saveUsers(users);
+  }
+
+  CURRENT_USER = username;
+  localStorage.setItem('ca_session', username);
+  DB = loadData();
+  mountUser();
+  document.getElementById('login-screen').classList.remove('visible');
+  showToast(`Welcome back, ${username}! 👋`, 'success');
+}
+
+function doLogout() {
+  // Stop any running timer first
+  if (timerRunning) timerStop();
+  CURRENT_USER = null;
+  localStorage.removeItem('ca_session');
+  DB = null;
+  // Reset UI
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('login-screen').classList.add('visible');
+  showToast('Logged out successfully.', 'info');
+}
+
+function mountUser() {
+  // Update topbar user display
+  const name = CURRENT_USER || 'User';
+  document.getElementById('user-display-name').textContent = name;
+  document.getElementById('user-avatar').textContent = name[0].toUpperCase();
+  // Initialize planner dropdowns
+  populateTaskChapters();
+  // Reset to dashboard
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-dashboard').classList.add('active');
+  document.querySelector('.nav-item').classList.add('active');
+  document.getElementById('page-title').textContent = 'Dashboard';
+  updateDashboard();
+}
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const SUBJECTS_META = {
+  fr:    { name: 'Financial Reporting', short: 'FR',    color: '#818cf8' },
+  afm:   { name: 'Advanced Financial Mgmt', short: 'AFM',   color: '#34d399' },
+  audit: { name: 'Auditing & Ethics',   short: 'Audit', color: '#f472b6' },
+  dt:    { name: 'Direct Tax',          short: 'DT',    color: '#fb923c' },
+  idt:   { name: 'Indirect Tax',        short: 'IDT',   color: '#22d3ee' },
+};
+
+const CHAPTERS = {
+  fr: [
+    'Introduction to Indian Accounting Standards',
+    'Conceptual Framework for Financial Reporting under Ind AS',
+    'Ind AS on Presentation of Items in Financial Statements',
+    'Ind AS on Measurement based on Accounting Policies',
+    'Ind AS 115 Revenue from Contracts with Customers',
+    'Ind AS on Assets of Financial Statements',
+    'Other Indian Accounting Standards',
+    'Ind AS on Liabilities of Financial Statements',
+    'Ind AS on Items Impacting Financial Statements',
+    'Ind AS on Disclosures in Financial Statements',
+    'Accounting and Reporting of Financial Instruments',
+    'Ind AS 103 Business Combinations',
+    'Consolidated and Separate Financial Statements',
+    'Ind AS 101 First Time Adoption of Ind AS',
+    'Analysis of Financial Statements',
+    'Professional and Ethical Duty of Chartered Accountant',
+    'Accounting and Technology'
+  ],
+  afm: [
+    'Financial Policy and Corporate Strategy',
+    'Risk Management',
+    'Advanced Capital Budgeting Decisions',
+    'Security Analysis',
+    'Security Valuation',
+    'Portfolio Management',
+    'Securitization',
+    'Mutual Funds',
+    'Derivatives Analysis and Valuation',
+    'Foreign Exchange Exposure and Risk Management',
+    'International Financial Management',
+    'Interest Rate Risk Management',
+    'Business Valuation',
+    'Mergers Acquisitions and Corporate Restructuring',
+    'Startup Finance'
+  ],
+  audit: [
+    'Quality Control',
+    'General Auditing Principles and Auditor Responsibilities',
+    'Audit Planning Strategy and Execution',
+    'Materiality Risk Assessment and Internal Control',
+    'Audit Evidence',
+    'Completion and Review',
+    'Reporting',
+    'Specialised Areas',
+    'Audit Related Services',
+    'Review of Financial Information',
+    'Prospective Financial Information and Other Assurance Services',
+    'Digital Auditing and Assurance',
+    'Group Audits',
+    'Special Features of Audit of Banks and NBFCs',
+    'Overview of Audit of Public Sector Undertakings',
+    'Internal Audit',
+    'Due Diligence Investigation and Forensic Audit',
+    'ESG and Sustainable Development Assurance',
+    'Professional Ethics and Liabilities of Auditors'
+  ],
+  dt: [
+    'Basic Concepts',
+    'Incomes not forming part of Total Income',
+    'Profits and Gains of Business or Profession',
+    'Capital Gains',
+    'Income from Other Sources',
+    'Income of Other Persons included in Assessee Income',
+    'Aggregation of Income Set off and Carry Forward of Losses',
+    'Deductions from Gross Total Income',
+    'Assessment of Various Entities',
+    'Assessment of Trusts Political Parties and Other Special Entities',
+    'Tax Planning Tax Avoidance and Tax Evasion',
+    'Taxation of Digital Transactions',
+    'Deduction Collection and Recovery of Tax',
+    'Income Tax Authorities',
+    'Assessment Procedure',
+    'Appeals and Revision',
+    'Dispute Resolution',
+    'Miscellaneous Provisions',
+    'Provisions to Counteract Unethical Tax Practices',
+    'Tax Audit and Ethical Compliances',
+    'Non Resident Taxation',
+    'Double Taxation Relief',
+    'Advance Rulings',
+    'Transfer Pricing',
+    'Fundamentals of BEPS',
+    'Application and Interpretation of Tax Treaties',
+    'Overview of Model Tax Conventions',
+    'Latest Developments in International Taxation'
+  ],
+  idt: [
+    'Supply under GST',
+    'Charge of GST',
+    'Place of Supply',
+    'Exemptions from GST',
+    'Time of Supply',
+    'Value of Supply',
+    'Input Tax Credit',
+    'Registration',
+    'Tax Invoice Credit and Debit Notes',
+    'Accounts and Records E-way Bill',
+    'Payment of Tax',
+    'Electronic Commerce Transactions',
+    'Returns',
+    'Import and Export under GST',
+    'Refunds',
+    'Job Work',
+    'Assessment and Audit',
+    'Inspection Search Seizure and Arrest',
+    'Demand and Recovery',
+    'Liability to Pay in Certain Cases',
+    'Offences and Penalties',
+    'Appeals and Revisions',
+    'Advance Ruling',
+    'Miscellaneous Provisions',
+    'Levy and Exemption from Customs Duty',
+    'Types of Duty',
+    'Classification of Imported and Exported Goods',
+    'Valuation under Customs Act',
+    'Importation and Exportation of Goods',
+    'Warehousing',
+    'Refund',
+    'Foreign Trade Policy'
+  ]
+};
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+function loadData() {
+  const defaults = {
+    chapters:  {},
+    studyLog:  {},
+    tasks:     [],
+    sessions:  [],
+  };
+  if (!CURRENT_USER) return defaults;
+  try {
+    const saved = localStorage.getItem(userStorageKey(CURRENT_USER, 'data'));
+    if (saved) return { ...defaults, ...JSON.parse(saved) };
+  } catch(e) {}
+  return defaults;
+}
+function saveData() {
+  if (!CURRENT_USER) return;
+  try { localStorage.setItem(userStorageKey(CURRENT_USER, 'data'), JSON.stringify(DB)); } catch(e) {}
+}
+let DB = null;
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function today()  { return new Date().toISOString().slice(0,10); }
+function fmtTime(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function fmtHours(s) { return (s/3600).toFixed(1)+'h'; }
+function uid() { return Date.now()+Math.random().toString(36).slice(2); }
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = 'toast', 2600);
+}
+
+// ── CHAPTER STATUS ────────────────────────────────────────────────────────────
+function getChapterStatus(subj, idx) {
+  return DB.chapters[`${subj}_${idx}`] || 'not';
+}
+function setChapterStatus(subj, idx, val) {
+  DB.chapters[`${subj}_${idx}`] = val;
+  saveData();
+  updateDashboard();
+}
+function getSubjectStats(subj) {
+  const total = CHAPTERS[subj].length;
+  let done = 0, prog = 0;
+  CHAPTERS[subj].forEach((_, i) => {
+    const s = getChapterStatus(subj, i);
+    if (s === 'done') done++;
+    else if (s === 'prog') prog++;
+  });
+  return { total, done, prog, not: total-done-prog };
+}
+
+// ── STUDY LOG ─────────────────────────────────────────────────────────────────
+function todaySeconds() { return DB.studyLog[today()] || 0; }
+function weekSeconds() {
+  let total = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    total += DB.studyLog[d.toISOString().slice(0,10)] || 0;
+  }
+  return total;
+}
+function totalSeconds() { return Object.values(DB.studyLog).reduce((a,b) => a+b, 0); }
+function addStudySeconds(s) {
+  DB.studyLog[today()] = (DB.studyLog[today()] || 0) + s;
+  saveData();
+}
+
+// ── STREAK ────────────────────────────────────────────────────────────────────
+function calcStreak() {
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const key = d.toISOString().slice(0,10);
+    if ((DB.studyLog[key] || 0) > 0) streak++;
+    else if (i > 0) break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function updateDashboard() {
+  if (!DB) return;
+  document.getElementById('dash-today').textContent = fmtHours(todaySeconds());
+  document.getElementById('dash-week').textContent  = fmtHours(weekSeconds());
+  document.getElementById('dash-total').textContent = fmtHours(totalSeconds());
+  document.getElementById('streak-count').textContent = calcStreak();
+
+  // Chapter counts
+  let totalCh = 0, doneCh = 0, progCh = 0;
+  Object.keys(CHAPTERS).forEach(s => {
+    const st = getSubjectStats(s);
+    totalCh += st.total; doneCh += st.done; progCh += st.prog;
+  });
+  document.getElementById('dash-chapters').textContent = `${doneCh}/${totalCh}`;
+  document.getElementById('stat-done').textContent = doneCh;
+  document.getElementById('stat-prog').textContent = progCh;
+
+  // Overall ring
+  const pct = totalCh ? Math.round((doneCh/totalCh)*100) : 0;
+  document.getElementById('overall-pct').textContent = pct+'%';
+  const circ = 364.4;
+  document.getElementById('overall-ring-fg').style.strokeDashoffset = circ - (circ * pct / 100);
+
+  // Subject progress bars
+  const pbEl = document.getElementById('subject-progress-bars');
+  pbEl.innerHTML = '';
+  Object.keys(SUBJECTS_META).forEach(key => {
+    const meta = SUBJECTS_META[key];
+    const st = getSubjectStats(key);
+    const p = st.total ? Math.round((st.done/st.total)*100) : 0;
+    pbEl.innerHTML += `
+      <div class="prog-wrap">
+        <div class="prog-label">
+          <strong>${meta.short} — ${meta.name}</strong>
+          <span>${st.done}/${st.total} <b style="color:var(--text)">${p}%</b></span>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill" style="width:${p}%;background:${meta.color};"></div>
+        </div>
+      </div>`;
+  });
+
+  // Today's tasks
+  const tasks = DB.tasks.filter(t => t.date === today());
+  const dashTasks = document.getElementById('dash-tasks');
+  if (!tasks.length) {
+    dashTasks.innerHTML = '<div class="empty-state"><span class="empty-icon">📝</span>No tasks today. Add some in the Planner!</div>';
+  } else {
+    dashTasks.innerHTML = tasks.slice(0,5).map(t => renderTaskHTML(t, true)).join('');
+  }
+}
+
+// ── PAGES ─────────────────────────────────────────────────────────────────────
+const PAGE_TITLES = { dashboard:'Dashboard', timer:'Study Timer', planner:'Daily Planner', chapters:'Chapter Tracker', charts:'Analytics' };
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-'+id);
+  if (page) { page.classList.add('active'); page.classList.remove('fade-in'); void page.offsetWidth; page.classList.add('fade-in'); }
+  if (btn) btn.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[id] || id;
+  closeSidebar();
+  // Refresh
+  if (id==='dashboard') updateDashboard();
+  if (id==='planner')   { populateTaskChapters(); renderTasks(); }
+  if (id==='chapters')  renderChapters();
+  if (id==='charts')    renderCharts();
+  if (id==='timer')     { updateTimerChapters(); renderTodaySessions(); }
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+let timerInterval = null, timerSeconds = 0, timerRunning = false, timerStartTime = null;
+
+function updateTimerChapters() {
+  const subj = document.getElementById('timer-subject').value;
+  const sel  = document.getElementById('timer-chapter');
+  sel.innerHTML = '<option value="">All chapters / General</option>';
+  if (subj && CHAPTERS[subj]) {
+    CHAPTERS[subj].forEach((ch, i) => {
+      sel.innerHTML += `<option value="${i}">${i+1}. ${ch}</option>`;
+    });
+  }
+}
+
+function timerStart() {
+  const subj = document.getElementById('timer-subject').value;
+  if (!subj) { showToast('Please select a subject first', 'info'); return; }
+  timerRunning = true;
+  timerStartTime = timerStartTime || Date.now() - timerSeconds*1000;
+  timerInterval = setInterval(() => {
+    timerSeconds = Math.floor((Date.now() - timerStartTime)/1000);
+    updateTimerDisplay();
+  }, 1000);
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-stop').disabled  = false;
+  document.getElementById('timer-status-label').textContent = 'Studying…';
+  const subj_name = SUBJECTS_META[subj]?.short || subj;
+  document.getElementById('timer-session-info').textContent = `Session: ${subj_name}`;
+}
+
+function timerPause() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-pause').disabled = true;
+    document.getElementById('timer-status-label').textContent = 'Paused';
+    timerStartTime = null;
+  }
+}
+
+function timerStop() {
+  clearInterval(timerInterval);
+  if (timerSeconds > 5) {
+    const subj  = document.getElementById('timer-subject').value;
+    const chIdx = document.getElementById('timer-chapter').value;
+    const note  = document.getElementById('timer-note').value.trim();
+    const chName = chIdx !== '' ? CHAPTERS[subj][chIdx] : 'General';
+    const session = { id: uid(), subject: subj, chapter: chName, seconds: timerSeconds, date: today(), note };
+    DB.sessions.push(session);
+    addStudySeconds(timerSeconds);
+    saveData();
+    showToast(`✓ Logged ${fmtHours(timerSeconds)} for ${SUBJECTS_META[subj]?.short}`, 'success');
+    renderTodaySessions();
+    updateDashboard();
+  }
+  timerSeconds = 0; timerStartTime = null; timerRunning = false;
+  updateTimerDisplay();
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-stop').disabled  = true;
+  document.getElementById('timer-status-label').textContent = 'Ready';
+  document.getElementById('timer-session-info').textContent = '';
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timer-display').textContent = fmtTime(timerSeconds);
+  // Ring animation (max 1 hour = 3600s)
+  const pct = Math.min(timerSeconds / 3600, 1);
+  const circ = 553;
+  document.getElementById('timer-ring-fg').style.strokeDashoffset = circ - circ*pct;
+}
+
+function renderTodaySessions() {
+  if (!DB) return;
+  const sessions = DB.sessions.filter(s => s.date === today()).reverse();
+  const el = document.getElementById('today-sessions');
+  if (!sessions.length) { el.innerHTML = '<div class="empty-state" style="padding:20px 0;">No sessions yet today</div>'; return; }
+  el.innerHTML = sessions.map(s => `
+    <div class="task-item">
+      <div class="task-meta">
+        <div class="task-name">${s.chapter}</div>
+        <div class="task-tags">
+          <span class="tag tag-${s.subject}">${SUBJECTS_META[s.subject]?.short}</span>
+          ${s.note ? `<span class="tag" style="background:var(--surface);color:var(--muted);">${s.note}</span>` : ''}
+        </div>
+      </div>
+      <span class="mono" style="font-size:13px;color:var(--accent);flex-shrink:0;">${fmtHours(s.seconds)}</span>
+    </div>`).join('');
+}
+
+// ── TASKS ─────────────────────────────────────────────────────────────────────
+function populateTaskChapters() {
+  const subj = document.getElementById('task-subject').value;
+  const sel  = document.getElementById('task-chapter');
+  sel.innerHTML = '<option value="">General / All</option>';
+  if (subj && CHAPTERS[subj]) {
+    CHAPTERS[subj].forEach((ch,i) => sel.innerHTML += `<option value="${i}">${i+1}. ${ch}</option>`);
+  }
+}
+function updateTaskChapters() { populateTaskChapters(); }
+
+function addTask() {
+  if (!DB || !CURRENT_USER) { showToast('Please log in first'); return; }
+  const name = document.getElementById('task-name').value.trim();
+  const subj = document.getElementById('task-subject').value;
+  const chIdx= document.getElementById('task-chapter').value;
+  if (!name) { showToast('Enter a task name'); return; }
+  const chName = chIdx !== '' ? CHAPTERS[subj]?.[chIdx] || '' : '';
+  const task = { id: uid(), name, subject: subj, chapter: chName, done: false, date: today(), doneDate: null };
+  DB.tasks.push(task);
+  saveData();
+  document.getElementById('task-name').value = '';
+  renderTasks();
+  updateDashboard();
+  showToast('Task added ✓', 'success');
+}
+
+function toggleTask(id) {
+  const task = DB.tasks.find(t => t.id === id);
+  if (task) {
+    task.done = !task.done;
+    task.doneDate = task.done ? today() : null;
+    saveData(); renderTasks(); updateDashboard();
+  }
+}
+
+function deleteTask(id) {
+  DB.tasks = DB.tasks.filter(t => t.id !== id);
+  saveData(); renderTasks(); updateDashboard();
+}
+
+function renderTaskHTML(task, minimal=false) {
+  return `<div class="task-item ${task.done?'done':''}">
+    <div class="task-check ${task.done?'checked':''}" onclick="toggleTask('${task.id}')"></div>
+    <div class="task-meta">
+      <div class="task-name">${task.name}</div>
+      <div class="task-tags">
+        <span class="tag tag-${task.subject}">${SUBJECTS_META[task.subject]?.short||task.subject}</span>
+        ${task.chapter ? `<span class="tag" style="background:var(--surface2);color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${task.chapter}</span>` : ''}
+      </div>
+    </div>
+    ${!minimal ? `<button class="delete-btn" onclick="deleteTask('${task.id}')">✕</button>` : ''}
+  </div>`;
+}
+
+function renderTasks() {
+  if (!DB) return;
+  const todayTasks = DB.tasks.filter(t => t.date === today());
+  const pending    = todayTasks.filter(t => !t.done);
+  const done       = todayTasks.filter(t => t.done);
+  document.getElementById('pending-count').textContent = pending.length;
+  document.getElementById('done-count').textContent    = done.length;
+  const pEl = document.getElementById('tasks-pending');
+  const dEl = document.getElementById('tasks-done');
+  pEl.innerHTML = pending.length ? pending.map(t => renderTaskHTML(t)).join('') : '<div class="empty-state"><span class="empty-icon">🎉</span>All clear!</div>';
+  dEl.innerHTML = done.length   ? done.map(t => renderTaskHTML(t)).join('')    : '<div class="empty-state"><span class="empty-icon">📋</span>No completed tasks</div>';
+}
+
+// ── CHAPTERS ──────────────────────────────────────────────────────────────────
+function renderChapters() {
+  if (!DB) return;
+  const el = document.getElementById('chapter-list');
+  el.innerHTML = '';
+  Object.keys(SUBJECTS_META).forEach(subj => {
+    const meta = SUBJECTS_META[subj];
+    const st   = getSubjectStats(subj);
+    const pct  = st.total ? Math.round((st.done/st.total)*100) : 0;
+    const listId = `chlist-${subj}`;
+    el.innerHTML += `
+      <div class="chapter-subject">
+        <div class="chapter-subject-header" onclick="toggleChapterList('${listId}')">
+          <div class="chapter-subject-name">
+            <span class="dot" style="background:${meta.color};width:10px;height:10px;"></span>
+            ${meta.name}
+          </div>
+          <div class="chapter-subject-stats">
+            <span style="font-size:12px;color:var(--muted);">${st.done}/${st.total} done</span>
+            <div style="width:80px;" class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${meta.color};"></div></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:${meta.color};">${pct}%</span>
+            <span style="color:var(--muted);font-size:14px;">▾</span>
+          </div>
+        </div>
+        <div class="chapter-list" id="${listId}">
+          ${CHAPTERS[subj].map((ch, i) => {
+            const status = getChapterStatus(subj, i);
+            return `<div class="chapter-item status-${status}" id="chi-${subj}-${i}">
+              <span class="chapter-num">${i+1}</span>
+              <span class="chapter-name">${ch}</span>
+              <div class="chapter-status">
+                <select onchange="onChapterStatusChange('${subj}',${i},this.value)" style="background:var(--surface2);color:var(--text);">
+                  <option value="not"  ${status==='not' ?'selected':''}>○ Not Started</option>
+                  <option value="prog" ${status==='prog'?'selected':''}>● In Progress</option>
+                  <option value="done" ${status==='done'?'selected':''}>✓ Completed</option>
+                </select>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  });
+}
+
+function toggleChapterList(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+function onChapterStatusChange(subj, idx, val) {
+  setChapterStatus(subj, idx, val);
+  const item = document.getElementById(`chi-${subj}-${idx}`);
+  if (item) { item.className = `chapter-item status-${val}`; }
+  // Re-render subject header stats
+  const st = getSubjectStats(subj);
+  showToast(`${CHAPTERS[subj][idx].slice(0,30)}… marked as ${val==='done'?'Completed':val==='prog'?'In Progress':'Not Started'}`, 'success');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+let weeklyChart = null, subjectChart = null;
+
+function renderCharts() {
+  if (!DB) return;
+  const isDark = document.documentElement.dataset.theme !== 'light';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? 'rgba(232,232,240,0.6)' : 'rgba(26,26,46,0.6)';
+
+  // Weekly chart
+  const labels = [], data = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    labels.push(d.toLocaleDateString('en',{weekday:'short'}));
+    data.push(((DB.studyLog[key]||0)/3600).toFixed(2));
+  }
+  if (weeklyChart) weeklyChart.destroy();
+  const ctx1 = document.getElementById('chart-weekly').getContext('2d');
+  weeklyChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Hours', data,
+        backgroundColor: 'rgba(124,111,205,0.7)',
+        borderColor: '#7c6fcd',
+        borderWidth: 2,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { color: textColor } },
+        y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, beginAtZero: true },
+      }
+    }
+  });
+
+  // Subject chart
+  const subjLabels = [], subjData = [], subjColors = [];
+  Object.keys(SUBJECTS_META).forEach(k => {
+    const st = getSubjectStats(k);
+    subjLabels.push(SUBJECTS_META[k].short);
+    subjData.push(st.total ? Math.round((st.done/st.total)*100) : 0);
+    subjColors.push(SUBJECTS_META[k].color);
+  });
+  if (subjectChart) subjectChart.destroy();
+  const ctx2 = document.getElementById('chart-subjects').getContext('2d');
+  subjectChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: subjLabels,
+      datasets: [{ data: subjData, backgroundColor: subjColors.map(c=>c+'cc'), borderColor: subjColors, borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: textColor, font: { size: 12 }, padding: 14 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.raw}% completed` } }
+      },
+      cutout: '65%',
+    }
+  });
+
+  // Table
+  const tbody = document.getElementById('stats-tbody');
+  tbody.innerHTML = '';
+  Object.keys(SUBJECTS_META).forEach(k => {
+    const meta = SUBJECTS_META[k];
+    const st   = getSubjectStats(k);
+    const pct  = st.total ? Math.round((st.done/st.total)*100) : 0;
+    const hrs  = fmtHours(Object.values(DB.sessions).filter(s => s.subject===k).reduce((a,s)=>a+s.seconds,0));
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="dot" style="background:${meta.color};margin-right:8px;"></span>${meta.name}</td>
+        <td class="mono">${st.total}</td>
+        <td><span class="pill pill-success">${st.done}</span></td>
+        <td><span class="pill pill-warn">${st.prog}</span></td>
+        <td class="mono">${hrs}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="prog-bar" style="width:80px;"><div class="prog-fill" style="width:${pct}%;background:${meta.color};"></div></div>
+            <span class="mono" style="font-size:12px;">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+  });
+}
+
+// ── WHATSAPP SHARE ────────────────────────────────────────────────────────────
+function shareOnWhatsApp() {
+  if (!DB) return;
+
+  const name      = CURRENT_USER || 'Student';
+  const todayHrs  = (todaySeconds() / 3600).toFixed(1);
+  const weekHrs   = (weekSeconds()  / 3600).toFixed(1);
+  const totalHrs  = (totalSeconds() / 3600).toFixed(1);
+  const streak    = calcStreak();
+
+  let totalCh = 0, doneCh = 0, progCh = 0;
+  Object.keys(CHAPTERS).forEach(s => {
+    const st = getSubjectStats(s);
+    totalCh += st.total; doneCh += st.done; progCh += st.prog;
+  });
+  const overallPct = totalCh ? Math.round((doneCh / totalCh) * 100) : 0;
+
+  const subjectLines = Object.keys(SUBJECTS_META).map(k => {
+    const meta = SUBJECTS_META[k];
+    const st   = getSubjectStats(k);
+    const pct  = st.total ? Math.round((st.done / st.total) * 100) : 0;
+    const bar  = '█'.repeat(Math.round(pct/10)) + '░'.repeat(10 - Math.round(pct/10));
+    return `  ${meta.short.padEnd(6)} ${bar} ${pct}%`;
+  }).join('\n');
+
+  const message =
+`📐 *CA Final Study Update — May 2026*
+👤 *${name}*
+
+📊 *Progress Summary*
+━━━━━━━━━━━━━━━━━━━━
+⏱️ Today        : *${todayHrs}h*
+📅 This Week    : *${weekHrs}h*
+📚 Total Hours  : *${totalHrs}h*
+🔥 Day Streak   : *${streak} days*
+✅ Chapters Done: *${doneCh}/${totalCh}* (${overallPct}%)
+
+📈 *Subject-wise Progress*
+\`\`\`
+${subjectLines}
+\`\`\`
+
+💪 Grinding hard for CA Final May 2026!
+#CAFinal #ICAI #StudyUpdate`;
+
+  const encoded = encodeURIComponent(message);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+}
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const root = document.documentElement;
+  const isLight = root.dataset.theme === 'light';
+  root.dataset.theme = isLight ? 'dark' : 'light';
+  document.getElementById('theme-icon').textContent  = isLight ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = isLight ? 'Light Mode' : 'Dark Mode';
+  localStorage.setItem('ca_theme', root.dataset.theme);
+  if (document.getElementById('page-charts').classList.contains('active')) renderCharts();
+}
+function loadTheme() {
+  const saved = localStorage.getItem('ca_theme') || 'dark';
+  document.documentElement.dataset.theme = saved;
+  document.getElementById('theme-icon').textContent  = saved === 'dark' ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = saved === 'dark' ? 'Light Mode' : 'Dark Mode';
+}
+
+// ── SIDEBAR MOBILE ────────────────────────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadTheme();
+// Set copyright year
+const yr = new Date().getFullYear();
+document.querySelectorAll('#copy-year, .copy-year-login').forEach(el => el.textContent = yr);
+
+// Check for saved session (auto-login)
+(function checkSession() {
+  const savedUser = localStorage.getItem('ca_session');
+  const users = getUsers();
+  if (savedUser && users[savedUser]) {
+    CURRENT_USER = savedUser;
+    DB = loadData();
+    mountUser();
+    document.getElementById('login-screen').classList.remove('visible');
+  }
+  // else login screen stays visible
+})();
+</script>
+</body>
+</html>
